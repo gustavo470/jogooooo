@@ -1,0 +1,638 @@
+/* ==========================================================================
+   PAC-MAN ARCADE STYLE - ESTILOS VISUAIS
+   ========================================================================== */
+
+:root {
+  --bg-color: #060713;
+  --cabinet-bg: #0d0e22;
+  --maze-wall-color: #2121ff;
+  --maze-wall-glow: rgba(33, 33, 255, 0.6);
+  --pacman-yellow: #ffee00;
+  --pellet-color: #ffb897;
+  --power-pellet-color: #ffffff;
+  --text-white: #ffffff;
+  --text-yellow: #ffff00;
+  --text-red: #ff3333;
+  --text-cyan: #00ffff;
+  --ghost-red: #ff2222;
+  --ghost-pink: #ff88ff;
+  --ghost-cyan: #00ffff;
+  --ghost-orange: #ffaa33;
+  --ghost-vulnerable: #1b3eff;
+  --font-family: 'Press Start 2P', 'Courier New', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+body {
+  background-color: var(--bg-color);
+  background-image: 
+    radial-gradient(circle at 50% 30%, rgba(20, 24, 60, 0.8), transparent 70%),
+    linear-gradient(rgba(10, 10, 25, 0.4) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(10, 10, 25, 0.4) 1px, transparent 1px);
+  background-size: 100% 100%, 20px 20px, 20px 20px;
+  color: var(--text-white);
+  font-family: var(--font-family);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+  padding: 10px;
+}
+
+/* ==========================================================================
+   GABINETE ARCADE
+   ========================================================================== */
+
+.arcade-cabinet {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 600px;
+  width: 100%;
+  background: var(--cabinet-bg);
+  border: 4px solid #1c204b;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 
+    0 0 30px rgba(0, 0, 0, 0.8),
+    0 0 15px rgba(33, 33, 255, 0.3),
+    inset 0 0 20px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+/* ==========================================================================
+   PLACAR / HEADER HUD
+   ========================================================================== */
+
+.game-header {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  background: #02030a;
+  border: 2px solid #1a1e4a;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.9);
+}
+
+.hud-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.hud-label {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #8899cc;
+}
+
+.hud-value {
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  color: var(--text-white);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+.score-box .hud-value {
+  color: #ffff33;
+  text-shadow: 0 0 8px rgba(255, 255, 51, 0.6);
+}
+
+.high-score-box .hud-value {
+  color: #33ffaa;
+  text-shadow: 0 0 8px rgba(51, 255, 170, 0.6);
+}
+
+.level-box .hud-value {
+  color: #33bbff;
+}
+
+.hud-lives {
+  font-size: 13px;
+  letter-spacing: 2px;
+}
+
+.hud-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.arcade-icon-btn {
+  background: #151838;
+  border: 2px solid #2e3577;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.arcade-icon-btn:hover {
+  background: #252b66;
+  border-color: #4a56c4;
+  transform: translateY(-2px);
+}
+
+.arcade-icon-btn:active {
+  transform: translateY(1px);
+}
+
+/* ==========================================================================
+   ÁREA DO CANVAS & TELAS SOBREPOSTAS
+   ========================================================================== */
+
+.canvas-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #000000;
+  border: 3px solid #1a227e;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 
+    0 0 20px rgba(0, 0, 0, 0.95),
+    0 0 12px var(--maze-wall-glow);
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+  aspect-ratio: 560 / 620;
+  background: #000000;
+  image-rendering: pixelated;
+}
+
+/* Faixa temporária de fase / READY */
+.game-banner {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid var(--pacman-yellow);
+  border-radius: 8px;
+  padding: 10px 20px;
+  color: var(--pacman-yellow);
+  font-size: 18px;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(255, 238, 0, 0.8);
+  pointer-events: none;
+  z-index: 15;
+  animation: bannerPulse 1.2s infinite alternate ease-in-out;
+}
+
+@keyframes bannerPulse {
+  0% { transform: translate(-50%, -50%) scale(0.95); opacity: 0.9; }
+  100% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
+}
+
+/* Telas sobrepostas de Menu, Pausa e Game Over */
+.overlay-screen {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 5, 14, 0.92);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  z-index: 20;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.overlay-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.overlay-screen.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all;
+}
+
+.arcade-card {
+  background: #0b0c20;
+  border: 3px solid #232a6b;
+  border-radius: 14px;
+  padding: 22px 18px;
+  width: 100%;
+  max-width: 460px;
+  text-align: center;
+  box-shadow: 
+    0 0 25px rgba(0, 0, 0, 0.9),
+    0 0 15px rgba(33, 33, 255, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Tipografia e Títulos */
+.arcade-title {
+  font-size: 20px;
+  line-height: 1.4;
+  letter-spacing: 2px;
+}
+
+.title-sub {
+  font-size: 16px;
+}
+
+.glow-yellow {
+  color: var(--pacman-yellow);
+  text-shadow: 0 0 12px rgba(255, 238, 0, 0.8), 0 0 24px rgba(255, 200, 0, 0.4);
+}
+
+.glow-blue {
+  color: #4da6ff;
+  text-shadow: 0 0 12px rgba(77, 166, 255, 0.8);
+}
+
+.glow-red {
+  color: var(--text-red);
+  text-shadow: 0 0 14px rgba(255, 51, 51, 0.9);
+}
+
+.arcade-tagline {
+  font-size: 10px;
+  line-height: 1.5;
+  color: #ffcc00;
+  background: rgba(255, 204, 0, 0.08);
+  border: 1px dashed rgba(255, 204, 0, 0.3);
+  border-radius: 6px;
+  padding: 8px 10px;
+  width: 100%;
+}
+
+/* Apresentação dos Fantasmas */
+.character-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  padding: 10px;
+  border: 1px solid #1a204d;
+}
+
+.preview-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+}
+
+.preview-ghost {
+  font-size: 18px;
+}
+
+.preview-desc {
+  font-size: 8px;
+  line-height: 1.3;
+}
+
+.rules-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 8.5px;
+  line-height: 1.4;
+  color: #ccc;
+  width: 100%;
+}
+
+.rule-item {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 5px 8px;
+  border-radius: 4px;
+}
+
+.controls-hint {
+  font-size: 8px;
+  line-height: 1.5;
+  color: #8da2d6;
+  background: #070919;
+  border-radius: 6px;
+  padding: 8px;
+  width: 100%;
+}
+
+.high-score-badge {
+  font-size: 9px;
+  color: #33ffaa;
+  letter-spacing: 1px;
+}
+
+/* Botões Arcade */
+.arcade-btn {
+  font-family: var(--font-family);
+  font-size: 12px;
+  letter-spacing: 1px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+  width: 100%;
+  max-width: 280px;
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #ffee33 0%, #d4aa00 100%);
+  color: #0b0c20;
+  font-weight: bold;
+  box-shadow: 
+    0 4px 0 #997700,
+    0 0 15px rgba(255, 238, 0, 0.5);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 0 #997700,
+    0 0 20px rgba(255, 238, 0, 0.8);
+}
+
+.btn-primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #997700;
+}
+
+.btn-secondary {
+  background: linear-gradient(180deg, #3742fa 0%, #1a22a3 100%);
+  color: #ffffff;
+  box-shadow: 
+    0 4px 0 #101569,
+    0 0 10px rgba(55, 66, 250, 0.4);
+}
+
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 0 #101569,
+    0 0 15px rgba(55, 66, 250, 0.7);
+}
+
+.pulse-btn {
+  animation: pulseButton 1.6s infinite ease-in-out;
+}
+
+@keyframes pulseButton {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+.modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  align-items: center;
+}
+
+.pause-hint {
+  font-size: 9px;
+  color: #99aacc;
+}
+
+/* Estatísticas Game Over */
+.game-over-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  background: #050612;
+  border: 1px solid #232a6b;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+}
+
+.stat-value {
+  color: var(--pacman-yellow);
+  font-size: 12px;
+}
+
+.new-record {
+  color: #33ff77;
+  font-size: 10px;
+  margin-top: 4px;
+  animation: newRecordBlink 0.8s infinite alternate;
+}
+
+@keyframes newRecordBlink {
+  0% { opacity: 0.4; }
+  100% { opacity: 1; text-shadow: 0 0 10px #33ff77; }
+}
+
+/* ==========================================================================
+   CONTROLES VIRTUAIS (TOUCH SCREEN / CELULAR / TABLET)
+   ========================================================================== */
+
+.virtual-controls {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 14px;
+  padding-bottom: 4px;
+}
+
+.dpad {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  background: rgba(14, 17, 43, 0.7);
+  border: 2px solid #222964;
+  border-radius: 50%;
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.8);
+}
+
+.dpad-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  background: #111432;
+  border: 2px solid #283280;
+  border-radius: 50%;
+}
+
+.dpad-btn {
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  background: #1c225a;
+  border: 2px solid #3744b0;
+  border-radius: 12px;
+  font-size: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: #ffffff;
+  transition: all 0.1s ease;
+  box-shadow: 0 3px 0 #0f1236;
+}
+
+.dpad-btn:active,
+.dpad-btn.pressed {
+  background: #4758e0;
+  border-color: #7986ff;
+  transform: scale(0.92);
+  box-shadow: 0 1px 0 #0f1236;
+}
+
+.btn-up {
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.btn-up:active, .btn-up.pressed {
+  transform: translateX(-50%) scale(0.92);
+}
+
+.btn-down {
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.btn-down:active, .btn-down.pressed {
+  transform: translateX(-50%) scale(0.92);
+}
+
+.btn-left {
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.btn-left:active, .btn-left.pressed {
+  transform: translateY(-50%) scale(0.92);
+}
+
+.btn-right {
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.btn-right:active, .btn-right.pressed {
+  transform: translateY(-50%) scale(0.92);
+}
+
+/* ==========================================================================
+   RODAPÉ
+   ========================================================================== */
+
+.game-footer {
+  margin-top: 10px;
+  font-size: 7.5px;
+  color: #556699;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE (MOBILE & TELAS PEQUENAS)
+   ========================================================================== */
+
+@media (max-width: 600px) {
+  body {
+    padding: 4px;
+  }
+
+  .arcade-cabinet {
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .game-header {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .hud-label {
+    font-size: 7.5px;
+  }
+
+  .hud-value {
+    font-size: 11px;
+  }
+
+  .hud-lives {
+    font-size: 11px;
+  }
+
+  .arcade-card {
+    padding: 16px 12px;
+    gap: 10px;
+  }
+
+  .arcade-title {
+    font-size: 16px;
+  }
+
+  .title-sub {
+    font-size: 13px;
+  }
+
+  .character-preview {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .arcade-btn {
+    font-size: 10px;
+    padding: 10px 16px;
+  }
+
+  .dpad {
+    width: 160px;
+    height: 160px;
+  }
+
+  .dpad-btn {
+    width: 46px;
+    height: 46px;
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 800px) {
+  /* Em telas muito grandes de desktop, mantém os controles virtuais como opção ou discretos */
+  .virtual-controls {
+    opacity: 0.9;
+  }
+}

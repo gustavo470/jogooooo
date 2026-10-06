@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pac-Man Arcade Game</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="arcade-cabinet">
+    <!-- Top HUD / Placar -->
+    <header class="game-header">
+      <div class="hud-item score-box">
+        <span class="hud-label">SCORE</span>
+        <span id="score-display" class="hud-value">00000</span>
+      </div>
+      <div class="hud-item high-score-box">
+        <span class="hud-label">HIGH SCORE</span>
+        <span id="high-score-display" class="hud-value">00000</span>
+      </div>
+      <div class="hud-item level-box">
+        <span class="hud-label">FASE</span>
+        <span id="level-display" class="hud-value">1</span>
+      </div>
+      <div class="hud-item lives-box">
+        <span class="hud-label">VIDAS</span>
+        <span id="lives-display" class="hud-lives">❤️❤️❤️</span>
+      </div>
+      <div class="hud-actions">
+        <button id="sound-btn" class="arcade-icon-btn" title="Ativar/Desativar Som" aria-label="Som">🔊</button>
+        <button id="pause-btn" class="arcade-icon-btn" title="Pausar Jogo (P)" aria-label="Pausar">⏸️</button>
+      </div>
+    </header>
+
+    <!-- Área principal do Canvas e Telas Sobrepostas -->
+    <main class="canvas-wrapper">
+      <canvas id="game-canvas" width="560" height="620"></canvas>
+
+      <!-- Mensagem temporária (READY! / FASE X) -->
+      <div id="ready-banner" class="game-banner hidden">
+        <span id="banner-text">READY!</span>
+      </div>
+
+      <!-- Tela Inicial / Menu -->
+      <div id="start-screen" class="overlay-screen active">
+        <div class="arcade-card">
+          <h1 class="arcade-title glow-yellow">PAC-MAN<br><span class="title-sub glow-blue">STYLE</span></h1>
+          <p class="arcade-tagline">COMA TODOS OS PONTOS E FUJA DOS FANTASMAS!</p>
+
+          <!-- Demonstração dos Personagens -->
+          <div class="character-preview">
+            <div class="preview-row">
+              <span class="preview-ghost red-ghost">👻</span>
+              <span class="preview-desc"><strong style="color: #ff3333;">BLINKY</strong> (Perseguidor)</span>
+            </div>
+            <div class="preview-row">
+              <span class="preview-ghost pink-ghost">👻</span>
+              <span class="preview-desc"><strong style="color: #ff88ff;">PINKY</strong> (Emboscador)</span>
+            </div>
+            <div class="preview-row">
+              <span class="preview-ghost cyan-ghost">👻</span>
+              <span class="preview-desc"><strong style="color: #00ffff;">INKY</strong> (Estrategista)</span>
+            </div>
+            <div class="preview-row">
+              <span class="preview-ghost orange-ghost">👻</span>
+              <span class="preview-desc"><strong style="color: #ffaa33;">CLYDE</strong> (Covarde)</span>
+            </div>
+          </div>
+
+          <div class="rules-summary">
+            <div class="rule-item">🟡 Ponto normal: <strong>+10 pts</strong></div>
+            <div class="rule-item">⭐ Ponto especial: <strong>+50 pts</strong> (fantasmas vulneráveis!)</div>
+          </div>
+
+          <div class="controls-hint">
+            <p><strong>Controles no PC:</strong> ⬆️ W / ⬇️ S / ⬅️ A / ➡️ D ou Setas | <strong>P</strong>: Pausar</p>
+            <p><strong>Celular / Tablet:</strong> Use os botões virtuais ou deslize o dedo na tela</p>
+          </div>
+
+          <div class="high-score-badge">
+            RECORDE ATUAL: <span id="start-high-score">00000</span>
+          </div>
+
+          <button id="start-btn" class="arcade-btn btn-primary pulse-btn">
+            ▶ INICIAR JOGO
+          </button>
+        </div>
+      </div>
+
+      <!-- Tela de Pausa -->
+      <div id="pause-screen" class="overlay-screen hidden">
+        <div class="arcade-card">
+          <h2 class="arcade-title glow-yellow">PAUSADO</h2>
+          <p class="pause-hint">Pressione P ou clique abaixo para continuar</p>
+          <div class="modal-buttons">
+            <button id="resume-btn" class="arcade-btn btn-primary">▶ CONTINUAR</button>
+            <button id="restart-from-pause-btn" class="arcade-btn btn-secondary">🔄 REINICIAR</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tela de Game Over -->
+      <div id="game-over-screen" class="overlay-screen hidden">
+        <div class="arcade-card">
+          <h2 class="arcade-title glow-red">GAME OVER</h2>
+          <div class="game-over-stats">
+            <div class="stat-row">
+              <span>PONTUAÇÃO FINAL:</span>
+              <span id="final-score" class="stat-value">00000</span>
+            </div>
+            <div class="stat-row">
+              <span>MAIOR PONTUAÇÃO:</span>
+              <span id="game-over-high-score" class="stat-value">00000</span>
+            </div>
+            <div id="new-record-alert" class="new-record hidden">🎉 NOVO RECORDE! 🎉</div>
+          </div>
+          <button id="play-again-btn" class="arcade-btn btn-primary pulse-btn">
+            🔄 JOGAR NOVAMENTE
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Controles Virtuais para Celular / Tablet -->
+    <div id="virtual-controls" class="virtual-controls">
+      <div class="dpad">
+        <button id="ctrl-up" class="dpad-btn btn-up" aria-label="Cima">⬆️</button>
+        <button id="ctrl-left" class="dpad-btn btn-left" aria-label="Esquerda">⬅️</button>
+        <button id="ctrl-down" class="dpad-btn btn-down" aria-label="Baixo">⬇️</button>
+        <button id="ctrl-right" class="dpad-btn btn-right" aria-label="Direita">➡️</button>
+        <div class="dpad-center"></div>
+      </div>
+    </div>
+
+    <!-- Rodapé informativo -->
+    <footer class="game-footer">
+      <span>Labirinto Clássico Arcade &bull; 100% HTML, CSS e JavaScript Puro</span>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
